@@ -9,6 +9,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
+#include <ArduinoOTA.h>
 #include <NimBLEDevice.h>
 #include <ESPAsyncWebServer.h>
 #include "index_html.h"
@@ -267,6 +268,23 @@ void setup() {
         Serial.printf("mDNS: http://%s.local\n", MDNS_HOST);
     }
 
+    // OTA firmware updates
+    ArduinoOTA.setHostname(MDNS_HOST);
+    ArduinoOTA.onStart([]() {
+        Serial.println("OTA update starting...");
+        // Disconnect BLE to free resources during update
+        if (pClient && pClient->isConnected()) {
+            pClient->disconnect();
+        }
+        ble_connected = false;
+    });
+    ArduinoOTA.onEnd([]() { Serial.println("\nOTA update complete"); });
+    ArduinoOTA.onError([](ota_error_t error) {
+        Serial.printf("OTA error [%u]\n", error);
+    });
+    ArduinoOTA.begin();
+    Serial.println("OTA updates enabled");
+
     // Init BLE
     NimBLEDevice::init("CadenceMonitor");
     NimBLEDevice::setMTU(64);
@@ -317,6 +335,9 @@ void loop() {
             cadence_rpm = 0.0f;
         }
     }
+
+    // Handle OTA
+    ArduinoOTA.handle();
 
     // Broadcast to WebSocket clients
     broadcastCadence();

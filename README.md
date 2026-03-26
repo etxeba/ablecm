@@ -69,9 +69,17 @@ The `.env` file is gitignored so credentials won't be committed.
 
 ### Build and Flash
 
+First flash over USB:
+
 ```sh
 cd esp32
 pio run -t upload
+```
+
+Subsequent updates can be done over WiFi (OTA):
+
+```sh
+pio run -t upload -e ota
 ```
 
 ### Usage
