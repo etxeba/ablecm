@@ -25,6 +25,7 @@ Python server using `bleak` for BLE and `aiohttp` for HTTP/WebSocket.
 ### Setup
 
 ```sh
+cd pi
 python -m venv venv
 source venv/bin/activate
 pip install bleak aiohttp
@@ -33,6 +34,7 @@ pip install bleak aiohttp
 ### Usage
 
 ```sh
+cd pi
 python cadence_server.py
 ```
 
