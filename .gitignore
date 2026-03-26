@@ -4,3 +4,4 @@ __pycache__/
 .pio/
 esp32/.pio/
 *.lock
+.env

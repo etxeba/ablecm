@@ -2,19 +2,25 @@
  * ESP32-C3 Cadence Monitor
  *
  * Self-contained BLE cadence sensor display: connects to any CSC-compliant
- * sensor over BLE, runs a WiFi AP, and serves a real-time web viewer.
- * Connect to the "Cadence" WiFi network and open http://192.168.4.1
+ * sensor over BLE, joins a WiFi network, and serves a real-time web viewer.
+ * Access via http://cadence.local or the IP shown on serial.
  */
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include <NimBLEDevice.h>
 #include <ESPAsyncWebServer.h>
 #include "index_html.h"
 
-// --- WiFi AP settings ---
-static const char *AP_SSID = "Cadence";
-static const char *AP_PASS = "";  // open network for easy phone access
+// --- WiFi credentials (set via esp32/.env file) ---
+#ifndef WIFI_SSID
+#error "WIFI_SSID not defined — create esp32/.env with WIFI_SSID=YourNetwork"
+#endif
+#ifndef WIFI_PASS
+#error "WIFI_PASS not defined — create esp32/.env with WIFI_PASS=YourPassword"
+#endif
+static const char *MDNS_HOST = "cadence";  // http://cadence.local
 
 // --- BLE CSC UUIDs ---
 static const NimBLEUUID CSC_SERVICE_UUID("1816");
@@ -245,12 +251,21 @@ void setup() {
     delay(500);
     Serial.println("\n=== Cadence Monitor (ESP32-C3) ===");
 
-    // Start WiFi AP
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(AP_SSID, AP_PASS);
-    delay(100);
-    Serial.printf("WiFi AP '%s' started, IP: %s\n",
-                  AP_SSID, WiFi.softAPIP().toString().c_str());
+    // Connect to WiFi
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    Serial.printf("Connecting to '%s'", (const char *)WIFI_SSID);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.printf("\nConnected, IP: %s\n", WiFi.localIP().toString().c_str());
+
+    // Start mDNS so the device is reachable at http://cadence.local
+    if (MDNS.begin(MDNS_HOST)) {
+        MDNS.addService("http", "tcp", 80);
+        Serial.printf("mDNS: http://%s.local\n", MDNS_HOST);
+    }
 
     // Init BLE
     NimBLEDevice::init("CadenceMonitor");

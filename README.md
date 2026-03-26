@@ -46,12 +46,24 @@ Open `http://<pi-ip>:8999` in a browser. The BLE connection starts automatically
 
 ## ESP32-C3 Version
 
-Self-contained firmware for the ESP32-C3 Supermini. No Pi or external server needed -- the ESP32 runs a WiFi access point and serves the web UI directly.
+Self-contained firmware for the ESP32-C3 Supermini. No Pi or external server needed -- the ESP32 joins your home WiFi and serves the web UI directly.
 
 ### Requirements
 
 - ESP32-C3 Supermini (or any ESP32-C3 board)
 - [PlatformIO](https://platformio.org/)
+
+### Setup
+
+Copy the example env file and fill in your WiFi credentials:
+
+```sh
+cd esp32
+cp .env.example .env
+# edit .env with your WIFI_SSID and WIFI_PASS
+```
+
+The `.env` file is gitignored so credentials won't be committed.
 
 ### Build and Flash
 
@@ -63,8 +75,8 @@ pio run -t upload
 ### Usage
 
 1. Power on the ESP32
-2. Connect to the **Cadence** WiFi network (open, no password)
-3. Open **http://192.168.4.1** in a browser
+2. It connects to your WiFi and prints its IP on serial
+3. Open **http://cadence.local** (or the IP address) in a browser
 
 The device immediately begins scanning for a BLE cadence sensor and streams data to any connected browser via WebSocket.
 
