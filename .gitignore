@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+.pio/
+esp32/.pio/
+*.lock
